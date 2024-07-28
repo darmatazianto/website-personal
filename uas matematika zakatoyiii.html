@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Zakat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #e0c3fc, #8ec5fc);
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .header img {
+            width: 200px;
+            height: 100px;
+	    background-color: #333;
+        }
+        h1 {
+            text-align: center;
+	    font-family: Calibri, sans-serif;
+            font-size: 50px;
+            margin: 10px 0;
+        }
+        h2 {
+            text-align: center;
+	    font-family: Verdana, sans-serif;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .description {
+            text-align: center;
+            font-family: Verdana, sans-serif;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="number"], input[readonly] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #04791f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #035d14;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <img src="https://uimsya.ac.id/wp-content/uploads/2024/03/logo_1-2048x1033.png" alt="Logo UIMSYA">
+</div>
+
+<div class="container">
+    <h1>Kalkulator Zakat</h1>
+    <h2>BY DARMA TAZIANTO, VIA ARIK KUSUMA, HIMMATUL ULYA, BUKHORI FAWAID</h2>
+    <div class="description">
+        Kalkulator zakat adalah layanan untuk mempermudah perhitungan jumlah zakat yang harus ditunaikan oleh setiap umat muslim sesuai ketetapan syariah. Oleh karena itu, bagi Anda yang ingin mengetahui berapa jumlah zakat yang harus ditunaikan, silahkan gunakan fasilitas Kalkulator Zakat Tadris Matematika UIMSYA dibawah ini.
+    </div>
+    
+    <div class="form-group">
+        <label for="zakat-type">Pilih Jenis Zakat</label>
+        <select id="zakat-type" onchange="showZakatForm()">
+            <option value="">-- Pilih Jenis Zakat --</option>
+            <option value="zakat-perdagangan">Zakat Perdagangan</option>
+            <option value="zakat-penghasilan">Zakat Penghasilan</option>
+            <option value="zakat-emas">Zakat Emas</option>
+        </select>
+    </div>
+    
+    <div id="zakat-form"></div>
+    
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    const nisabEmas = 85 * 968000.385; // Nisab emas dalam rupiah (85 gram x harga per gram)
+
+    function formatRupiah(value) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(value);
+    }
+
+    function showZakatForm() {
+        const zakatType = document.getElementById('zakat-type').value;
+        let formHtml = '';
+
+        if (zakatType === 'zakat-perdagangan') {
+            formHtml = `
+                <div class="form-group">
+                    <label for="aset-lancar">Aset Lancar (Rp)</label>
+                    <input type="number" id="aset-lancar" placeholder="Masukkan aset lancar" oninput="updateJumlahPerdagangan()">
+                </div>
+                <div class="form-group">
+                    <label for="laba">Laba (Rp)</label>
+                    <input type="number" id="laba" placeholder="Masukkan laba" oninput="updateJumlahPerdagangan()">
+                </div>
+                <div class="form-group">
+                    <label for="jumlah-perdagangan">Jumlah (Rp)</label>
+                    <input type="text" id="jumlah-perdagangan" readonly>
+                </div>
+                <button onclick="calculateZakatPerdagangan()">Hitung Zakat</button>
+            `;
+        } else if (zakatType === 'zakat-penghasilan') {
+            formHtml = `
+                <div class="form-group">
+                    <label for="gaji">Gaji Per Bulan (Rp)</label>
+                    <input type="number" id="gaji" placeholder="Masukkan gaji per bulan" oninput="updateJumlahPenghasilan()">
+                </div>
+                <div class="form-group">
+                    <label for="penghasilan">Penghasilan Lain (Rp)</label>
+                    <input type="number" id="penghasilan" placeholder="Masukkan penghasilan lain" oninput="updateJumlahPenghasilan()">
+                </div>
+                <div class="form-group">
+                    <label for="jumlah-penghasilan">Jumlah Penghasilan (Rp)</label>
+                    <input type="text" id="jumlah-penghasilan" readonly>
+                </div>
+                <button onclick="calculateZakatPenghasilan()">Hitung Zakat</button>
+            `;
+        } else if (zakatType === 'zakat-emas') {
+            formHtml = `
+                <div class="form-group">
+                    <label for="emas">Jumlah Emas (gram)</label>
+                    <input type="number" id="emas" placeholder="Masukkan jumlah emas">
+                </div>
+                <button onclick="calculateZakatEmas()">Hitung Zakat</button>
+            `;
+        }
+
+        document.getElementById('zakat-form').innerHTML = formHtml;
+        document.getElementById('result').innerHTML = '';
+    }
+
+    function updateJumlahPerdagangan() {
+        const asetLancar = parseFloat(document.getElementById('aset-lancar').value) || 0;
+        const laba = parseFloat(document.getElementById('laba').value) || 0;
+        const jumlah = asetLancar + laba;
+        document.getElementById('jumlah-perdagangan').value = formatRupiah(jumlah);
+    }
+
+    function updateJumlahPenghasilan() {
+        const gaji = parseFloat(document.getElementById('gaji').value) || 0;
+        const penghasilan = parseFloat(document.getElementById('penghasilan').value) || 0;
+        const jumlah = (gaji + penghasilan) * 12;
+        document.getElementById('jumlah-penghasilan').value = formatRupiah(jumlah);
+    }
+
+    function calculateZakatPerdagangan() {
+        const asetLancar = parseFloat(document.getElementById('aset-lancar').value) || 0;
+        const laba = parseFloat(document.getElementById('laba').value) || 0;
+        const total = asetLancar + laba;
+
+        if (total < nisabEmas) {
+            document.getElementById('result').innerHTML = 'Kurang dari nisab, nisab Zakat Perdagangan Rp. 82.312.725';
+        } else {
+            const zakat = total * 0.025;
+            document.getElementById('result').innerHTML = `Zakat yang harus dibayar: ${formatRupiah(zakat)}`;
+        }
+    }
+
+    function calculateZakatPenghasilan() {
+        const gaji = parseFloat(document.getElementById('gaji').value) || 0;
+        const penghasilan = parseFloat(document.getElementById('penghasilan').value) || 0;
+        const total = (gaji + penghasilan) * 12;
+
+        if (total < nisabEmas) {
+            document.getElementById('result').innerHTML = 'Kurang dari nisab, nisab Zakat Penghasilan Rp. 82.312.725';
+        } else {
+            const zakat = total * 0.025;
+            document.getElementById('result').innerHTML = `Zakat yang harus dibayar: ${formatRupiah(zakat)}`;
+        }
+    }
+
+    function calculateZakatEmas() {
+        const emas = parseFloat(document.getElementById('emas').value) || 0;
+        const nilaiEmas = emas * 968000.385; // Nilai emas dalam rupiah
+
+        if (nilaiEmas < nisabEmas) {
+            document.getElementById('result').innerHTML = 'Kurang dari nisab, nisab Zakat Emas 85 gram atau Rp. 82.312.725';
+        } else {
+            const zakat = emas * 0.025;
+            document.getElementById('result').innerHTML = `Zakat yang harus dibayar: ${zakat.toFixed(2)} gram emas atau ${formatRupiah(zakat * 968000.385)}`;
+        }
+    }
+</script>
+
+</body>
+</html>
